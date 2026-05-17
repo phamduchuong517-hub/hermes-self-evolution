@@ -1,20 +1,20 @@
-# 🦞 OpenClaw Core Skills v2.0
+# 🦞 OpenClaw Core Skills v3.0
 
 **AI 助手自我进化核心系统** — 仅 5 个技能，100% 市场领先能力
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Version: 2.0.0](https://img.shields.io/badge/Version-2.0.0-green.svg)](https://github.com/phamduchuong517-hub/openclaw-core-skills/releases/tag/v2.0.0)
+[![Version: 3.0.0](https://img.shields.io/badge/Version-3.0.0-green.svg)](https://github.com/phamduchuong517-hub/openclaw-core-skills/releases/tag/v3.0.0)
 [![Hermes Agent](https://img.shields.io/badge/Hermes-Agent-blue)](https://github.com/project-hermes/hermes-agent)
 [![OpenClaw](https://img.shields.io/badge/OpenClaw-Core-red)](https://github.com/openclaw)
 
 ---
 
-## 🌟 v2.0 精简升级
+## 🌟 v3.0 核心升级
 
-> **v1.0 → v2.0 变化**: 删除 4 个非核心技能 (skill-lifecycle-manager, memory-audit, alert-monitor, qqbot-communication)，100% 聚焦 AI 自进化核心能力
+> **v2.0 → v3.0 变化**: self-improvement-core v4.0 → **v5.0.0** (记忆策展系统 + auto-memory-pro 融合)
 
 > **对比 everything-claude-code (162K⭐) 能力评估**:
-> - ✅ self-improvement-core v4.0 **领先 2 代** (五步法 + 代谢机制)
+> - ✅ self-improvement-core v5.0 **领先 2.5 代** (五步法 + 代谢 + **记忆策展系统**)
 > - ✅ task-orchestrator v3.0 **领先 1 代** (自进化反思)
 > - ✅ TaskBalancer v1.0 **轻量高效** (vs 48 SubAgents)
 > - ✅ token-optimization v1.0 **50% 压缩率** (vs 30%)
@@ -26,7 +26,7 @@
 
 | 技能 | 版本 | 竞争力 | 说明 |
 |------|------|--------|------|
-| **self-improvement-core** | v4.0.0 | ⭐⭐⭐⭐⭐ **绝对领先** | AI 助手自我进化核心 - 五步法 + 错误日志 + 自动记忆 + 深度搜索 + 自适应推理 + 习惯形成 + 系统代谢 |
+| **self-improvement-core** | v5.0.0 | ⭐⭐⭐⭐⭐ **绝对领先** | AI 助手自我进化核心 - 五步法 + 错误日志 + 自动记忆 + 深度搜索 + 自适应推理 + 习惯形成 + 系统代谢 + **记忆策展系统** |
 | **task-orchestrator** | v3.0.0 | ⭐⭐⭐⭐⭐ **绝对领先** | 任务编排器 - 规划→执行→监控→检查→自进化反思完整工作流 |
 | **TaskBalancer** | v1.0.0 | ⭐⭐⭐⭐ **领先** | 智能任务分配器 - 多 Agent 工作流的任务分配和负载均衡 |
 | **token-optimization** | v1.0.0 | ⭐⭐⭐⭐ **领先** | Token 优化 - 上下文压缩 + 智能缓存 + 流式输出 (减少 50% Token) |

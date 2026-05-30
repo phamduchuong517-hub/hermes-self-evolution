@@ -1,72 +1,54 @@
 ---
-name: self-evolution
-title: Self-Evolution — Behavior Rule Engine
+name: hermes-skill-pack
+title: Hermes Agent Skill Pack
 description: >
-  Hermes Agent self-evolution via SELF-EVOLUTION.md rule table.
-  No dependencies. No databases. No external API calls.
-  Just one file + one prefill instruction = Agent learns from corrections.
+  15 production-grade Hermes Agent skills — self-evolution, task orchestration,
+  token optimization, debugging, writing plans, brainstorming, MCP builder, and more.
+  Zero dependencies. Drop into ~/.hermes/skills/ and they just work.
 version: 1.0.0
-author: Hermes Self-Evolution
-tags: [self-improvement, behavior, evolution, rules, minimal]
-source: https://github.com/yourname/hermes-self-evolution
+source: https://github.com/phamduchuong517-hub/hermes-self-evolution
+tags: [hermes-agent, skills, self-evolution, task-orchestration, token-optimization, mcp, debugging]
 ---
 
-# Self-Evolution Skill
+# Hermes Agent Skill Pack
 
-**Purpose:** Enable Hermes Agent to learn from user corrections and permanently change behavior.
+15 production-grade Hermes Agent skills. Drop into `~/.hermes/skills/` and they just work.
 
-## How It Works
-
-1. **SELF-EVOLUTION.md** — A markdown rule table at `~/.hermes/SELF-EVOLUTION.md`
-2. **prefill-evolution.txt** — Prefill instruction that forces reading the rule table before every response
-3. **config.yaml prefill_messages_file** — Injects the prefill into every conversation automatically
-
-## Installation
+## Quick Install
 
 ```bash
-# Copy the rule table
-cp examples/self-evolution.md ~/.hermes/SELF-EVOLUTION.md
+# Download the pack
+git clone https://github.com/phamduchuong517-hub/hermes-self-evolution.git /tmp/hermes-pack
 
-# Copy the prefill instruction
-cp examples/prefill-evolution.txt ~/.hermes/prefill-evolution.txt
+# Install all skills
+cp -r /tmp/hermes-pack/skills/* ~/.hermes/skills/
 
-# Add to config.yaml
-echo 'prefill_messages_file: "~/.hermes/prefill-evolution.txt"' >> ~/.hermes/config.yaml
+# Reload Hermes
+hermes reload
 ```
 
-## Rule Table Format
+## Skills Index
 
-```
-## 🔴 NEVER DO
-- rule description here
+### Core Infrastructure
+- **self-improvement-core** (v4.3) — Self-evolution engine
+- **task-orchestrator** (v3.0) — Task lifecycle manager
+- **token-optimization** (v2.1) — 60-95% token compression
+- **skill-lifecycle-manager** (v3.1) — Skill creation + factory + event bus
 
-## 🟢 ALWAYS DO
-- rule description here
+### Plugins
+- **external-system-learning** (v1.6) — Absorb capabilities from GitHub projects
+- **deep-search** (v2.0) — Multi-layer search with academic sources
+- **mcp-server-builder** (v1.0) — MCP server construction (Python + TypeScript)
 
-## 🟡 TECHNICAL DECISIONS
-- rule description here
+### Workflows
+- **systematic-debugging** (v2.0) — 4-stage root cause analysis
+- **writing-plans** (v2.0) — PACT contract-driven implementation plans
+- **brainstorming** (v1.0) — Pre-coding design refinement
+- **grill-with-docs** (v1.0) — Deep questioning + terminology alignment + ADRs
+- **doubt-driven-development** (v1.0) — Zero-context review for critical decisions
+- **git-workflow-complete** (v1.0) — Feature branch workflow with git worktrees
+- **subagent-driven-development** (v1.0) — Parallel subagent dispatch + 2-stage review
 
-## 🗄️ ARCHIVED (outdated)
-- rule description here
-```
+## License
 
-## Lifecycle
-
-```
-User correction → Skill writes rule to SELF-EVOLUTION.md
-                → Next conversation starts
-                → prefill forces scan of rules
-                → Agent changes behavior accordingly
-```
-
-## Verification
-
-To verify the skill is active:
-
-```bash
-# Check file exists
-ls -la ~/.hermes/SELF-EVOLUTION.md
-
-# Check prefill is configured
-grep prefill_messages_file ~/.hermes/config.yaml
-```
+MIT

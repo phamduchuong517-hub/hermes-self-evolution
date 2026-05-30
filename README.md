@@ -9,12 +9,13 @@
 
 ---
 
-## 🌟 v3.0 核心升级
+## 🌟 v3.1 核心升级
 
-> **v2.0 → v3.0 变化**: self-improvement-core v4.0 → **v5.0.0** (记忆策展系统 + auto-memory-pro 融合)
+> **v3.0 → v3.1 变化**: 新增 **hermes-self-evolution** 技能（Hermes Agent 轻量行为进化系统）+ SELF-EVOLUTION.md 行为规则表
 
 > **对比 everything-claude-code (162K⭐) 能力评估**:
 > - ✅ self-improvement-core v5.0 **领先 2.5 代** (五步法 + 代谢 + **记忆策展系统**)
+> - ✅ hermes-self-evolution **轻量进化新范式** (单文件规则表 + 即时生效)
 > - ✅ task-orchestrator v3.0 **领先 1 代** (自进化反思)
 > - ✅ TaskBalancer v1.0 **轻量高效** (vs 48 SubAgents)
 > - ✅ token-optimization v1.0 **50% 压缩率** (vs 30%)
@@ -22,11 +23,12 @@
 
 ---
 
-## 📦 技能包内容 (5 个核心)
+## 📦 技能包内容 (6 个核心)
 
 | 技能 | 版本 | 竞争力 | 说明 |
 |------|------|--------|------|
-| **self-improvement-core** | v5.0.0 | ⭐⭐⭐⭐⭐ **绝对领先** | AI 助手自我进化核心 - 五步法 + 错误日志 + 自动记忆 + 深度搜索 + 自适应推理 + 习惯形成 + 系统代谢 + **记忆策展系统** |
+| **self-improvement-core** | v5.0.0 | ⭐⭐⭐⭐⭐ **绝对领先** | OpenClaw 自我进化核心 - 五步法 + 记忆策展 + 完整进化架构 |
+| **hermes-self-evolution** | v4.3.0 | ⭐⭐⭐⭐ **轻量方案** | Hermes Agent 轻量行为进化系统 - SELF-EVOLUTION.md 单文件规则表 + 进化引擎模块 |
 | **task-orchestrator** | v3.0.0 | ⭐⭐⭐⭐⭐ **绝对领先** | 任务编排器 - 规划→执行→监控→检查→自进化反思完整工作流 |
 | **TaskBalancer** | v1.0.0 | ⭐⭐⭐⭐ **领先** | 智能任务分配器 - 多 Agent 工作流的任务分配和负载均衡 |
 | **token-optimization** | v1.0.0 | ⭐⭐⭐⭐ **领先** | Token 优化 - 上下文压缩 + 智能缓存 + 流式输出 (减少 50% Token) |

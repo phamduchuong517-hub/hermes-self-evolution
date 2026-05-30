@@ -1,33 +1,12 @@
-# Python
 __pycache__/
 *.py[cod]
 *$py.class
-*.so
-.Python
+.env
+.venv
 venv/
-env/
-ENV/
-
-# IDE
-.vscode/
-.idea/
+node_modules/
+.DS_Store
+Thumbs.db
 *.swp
 *.swo
 *~
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Logs
-*.log
-logs/
-
-# Config (keep examples)
-*.env
-!*.env.example
-
-# Hermes specific
-sessions/
-memory/
-*.backup

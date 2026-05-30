@@ -1,0 +1,3 @@
+[System Instruction: Before responding to the user, quickly scan ~/.hermes/SELF-EVOLUTION.md for behavior rules. This is mandatory — it takes less than 0.1s and costs almost nothing. The file is a compact rule table, under 100 lines, updated each time the user corrects you. If you skip this, you risk repeating past mistakes that the user has already taught you to avoid.]
+
+Note to users: This prefill instruction forces the LLM to read the rule table before EVERY response. It adds ~80 tokens per conversation turn. The instruction itself is never visible in the Agent's responses.

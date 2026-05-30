@@ -1,8 +1,8 @@
 ---
 name: self-improvement-core
 description: AI 助手自我进化核心 v4.3 - 整合自我进化五步法 + 错误日志 + 自动记忆 + 深度搜索 + 工具管理 + 自适应推理 + 自修改运行时 + 自动进化插件 + 主动能力研究 + 置信度评分 + 知识图谱 + WAL 协议 + Working Buffer + Compaction Recovery，提供完整的持续学习和自动进化能力
-version: 4.3.0
-source: self-improvement-system + self-evolution + error-logger + auto-memory-recorder + deep-search + adaptive-reasoning + self-modifying-runtime v3.0 + auto-evolution-plugin v3.0 + proactive-capability-research v1.0 + rohitg00/agentmemory 置信度评分 + 知识图谱 (2026-05-17 吸收) + halthelobster/proactive-agent WAL 协议 + Working Buffer + Compaction Recovery (2026-05-17 吸收)
+version: v7.2.0
+source: hermes-self-evolution v7.2.0 + ScienceClaw Zero-Hallucination Protocol + VOYAGER Reflection Loop
 upgrade: v4.3 新增：WAL 协议（响应前先写 SESSION-STATE.md）+ Working Buffer（60% 上下文阈值日志）+ Compaction Recovery（截断后恢复流程）+ 记忆架构分层重构；v5.0 在 openclaw-imports/self-improvement-core 中（三棵树记忆架构）
 ---
 

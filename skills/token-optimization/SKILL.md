@@ -1,37 +1,336 @@
----
+# ⚡ Token Optimization v2.6.0 - Token 优化技能 (上下文压缩 + 模型路由 + 级联故障转移 + 智能摘要替换 + TokenJuice 三层规则覆盖版)
 name: token-optimization
-description: Token 优化技能 - 上下文压缩 + 智能缓存 + 流式输出，减少 50% Token 使用，响应时间 10 秒→5 秒
-version: 1.0.0
+description: Token 优化技能 v2.6 - 上下文压缩 + 智能缓存 + 流式输出 + 会话管理 (50KB→8KB) + Provider Profile 模型路由 + cost-based routing + OpenRouter 缓存 + Context Budget + 健康检查 + 级联故障转移 + Trajectory式智能摘要替换 + TokenJuice 三层规则覆盖，减少 50%+ Token 使用，响应时间 10 秒→5 秒
+version: 2.6.0
 type: 性能优化
 priority: 🟡 高
+source: token-optimization v2.5 + tinyhumansai/openhuman TokenJuice (三层规则覆盖)
+upgrade: v2.6 注入 TokenJuice 三层规则覆盖 (内置/用户/项目规则叠加) + /opt:rules 命令 + 规则优先级继承 | v2.5 注入 级联故障转移 + 场景化切换策略 + Trajectory式智能摘要替换 (保护首尾→压缩中间→LLM摘要) | v2.0 会话管理(50KB→8KB) + 预算控制 + Provider Profile | v1.0 基础压缩
 ---
 
-# ⚡ Token Optimization - Token 优化技能
+# ⚡ Token Optimization v2.0 - Token 优化技能 (模型路由 + 会话管理增强版)
 
-**减少 50% Token 使用，响应时间 10 秒→5 秒**
+**减少 50%+ Token 使用，响应时间 10 秒→5 秒 — 会话管理 + 智能路由 + 预算控制**
 
 ---
 
 ## 核心能力
 
-### 1. 上下文压缩
-```
-压缩方法:
-1. 移除冗余信息
-   - 重复内容去重
-   - 移除无关内容
-   - 精简表达
+### -2. TokenJuice 三层规则覆盖 (v2.6 新注入) ⭐⭐⭐
 
-2. 保留关键内容
-   - 用户偏好
-   - 核心需求
-   - 关键决策
+**集成来源**: tinyhumansai/openhuman TokenJuice (vincentkoc/tokenjuice 移植, GNU GPL3)
 
-3. 使用摘要代替原文
-   - 长文本→摘要
-   - 对话→要点
-   - 日志→结论
+**核心思路**: OpenHuman 的 TokenJuice 在工具输出进入 LLM 前插一层规则覆盖, 实现分类→匹配→精简。我们在已有会话压缩基础上吸收这个**规则分层+策略映射**设计。
+
+```bash
+/opt:rules                      # 查看所有激活规则
+/opt:rules --builtin            # 查看内置规则
+/opt:rules --user               # 查看用户自定义规则
+/opt:rules --project            # 查看项目级规则
+/opt:rules --match "git diff"   # 测试某工具输出匹配哪些规则
+/opt:rules add --tool "git diff" --strategy "summary"  # 添加规则
+/opt:rules remove --tool "cargo build"                  # 删除规则
 ```
+
+**三层规则覆盖** (按层叠加, 后层覆盖前层):
+
+| 层 | 位置 | 用途 |
+|----|------|------|
+| 🏗 Builtin | 技能内置 | git/npm/cargo/docker/ls 等常用命令的默认规则 |
+| 👤 User | `~/.config/tokenjuice/rules/` | 用户全局覆盖 |
+| 📁 Project | `.tokenjuice/rules/` (项目内) | 项目级规则, 可团队共享 |
+
+**规则结构**:
+```json
+{
+  "tool_pattern": "git diff",
+  "strategy": "summary",        // truncate | dedup | fold | drop_regex | summary | passthrough
+  "max_lines": 20,
+  "max_tokens": 500,
+  "drop_regex": ["^index ", "^@@"],
+  "summary_prompt": "只返回文件变更摘要, 不要细节"
+}
+```
+
+**策略类型**:
+| 策略 | 效果 | 适用场景 |
+|------|------|----------|
+| `truncate` | 截断到 max_lines/tokens | 长列表、日志 |
+| `dedup` | 去重连续重复行 | 循环输出、进度条 |
+| `fold` | 合并空白/wrap | 格式化输出 |
+| `drop_regex` | 删除匹配行 | git diff header、时间戳 |
+| `summary` | LLM 摘要 (用廉价模型) | git diff、长报错 |
+| `passthrough` | 不压缩 | 小输出、错误信息 |
+
+**与现有压缩的配合**:
+- 会话管理 (50KB→8KB): 粗粒度, 按文件级别
+- 智能摘要替换 (Trajectory): 按轮次
+- **TokenJuice**: 按工具调用级别, 最细粒度
+- 三层互补: 会话级 → 轮次级 → 调用级
+
+**规则匹配流程**:
+```
+工具输出
+   │
+   ▼
+分类器 (工具名 + 参数模式)
+   │
+   ▼
+匹配规则链: builtin → user → project
+   │  (project 覆盖 user, user 覆盖 builtin)
+   ▼
+执行策略 (truncate/dedup/...)
+   │
+   ▼
+压缩后的输出 → LLM 上下文
+```
+
+**预期效果**: 在现有 50KB→8KB 基础上再减少工具调用层 20-40% token (取决于工具类型)
+
+---
+
+### -1. 会话管理优化 (v2.0 新注入) ⭐⭐⭐
+
+**集成来源**: smartpeopleconnected/openclaw-token-optimizer Session Management + Context Analysis
+
+```bash
+/opt:analyze                    # 当前配置分析 + 优化机会
+/opt:session                    # 查看会话上下文大小
+/opt:session --trim             # 精简当前会话到 8KB
+/opt:session --dump             # 按大小排序所有源文件
+```
+
+**上下文瘦身策略** (50KB → 8KB):
+
+| 文件 | 优化前 | 优化后 | 节省 |
+|------|--------|--------|------|
+| SOUL.md | 15KB | 3KB | 80% |
+| USER.md | 8KB | 2KB | 75% |
+| MEMORY.md | 20KB | 2KB (仅摘要) | 90% |
+| 历史消息 | 7KB | 1KB (仅最近) | 85% |
+| **总计** | **50KB** | **8KB** | **84%** |
+
+**规则**:
+- 启动时仅加载 SOUL.md + USER.md + MEMORY.md 摘要
+- 历史消息按需加载 (仅当用户引用时才加载完整历史)
+- 每日记忆文件取代完整历史回溯
+- 文件超过 10KB 自动生成摘要
+
+### -0.5 健康检查 + 验证 (v2.0 新注入) ⭐⭐
+
+```bash
+/opt:health                     # 全面健康检查
+/opt:verify                     # 验证所有优化是否生效
+/opt:health --report            # 生成优化状态报告
+```
+
+**健康检查项**:
+- ✅ 模型路由已配置 (default = cheap)
+- ✅ 工作空间文件 < 10KB
+- ✅ 日预算已设置 ($5)
+- ✅ Prompt 缓存功能已启用
+- ✅ 会话上下文 < 10KB
+- ✅ 日志保留策略合理
+
+---
+
+### 0. Provider Profile 模型路由 (v2.0 新注入) ⭐⭐⭐
+
+**集成来源**: Hermes Agent v0.13.0 ProviderPlugin + Model Router
+
+```bash
+/opt:profile                    # 查看 Provider Profile
+/opt:route "翻译这段文字"       # 测试路由决策
+/opt:route --cheap             # 强制使用经济模型
+/opt:route --premium           # 强制使用高性能模型
+/opt:route --dry-run           # 预览路由结果（不执行）
+```
+
+**路由决策引擎**:
+```
+╔══════════════════════════════════════╗
+║          Model Router                ║
+║   ┌──────────────────────────┐       ║
+║   │ 任务分析                  │       ║
+║   │ ├── Complexity Score (1-10)│       ║
+║   │ ├── Required Capabilities │       ║
+║   │ └── Context Budget Needed │       ║
+║   └──────────┬───────────────┘       ║
+║              ▼                        ║
+║   ┌──────────────────────────┐       ║
+║   │ 模型选择                  │       ║
+║   │ ├── Cost Score           │       ║
+║   │ ├── Context Capacity     │       ║
+║   │ ├── Capability Match     │       ║
+║   │ └── Latency Requirement  │       ║
+║   └──────────┬───────────────┘       ║
+║              ▼                        ║
+║   ┌──────────────────────────┐       ║
+║   │ 最优模型决策              │       ║
+║   └──────────────────────────┘       ║
+╚══════════════════════════════════════╝
+```
+
+**模型分级**:
+| 级别 | 模型 | 成本/Tok | 适用场景 |
+|------|------|----------|----------|
+| 🟢 Free | Qwen-Turbo | $0.0 | 简单问答/翻译 |
+| 🟡 Cheap | DeepSeek-Chat | $0.15/M | 常规任务/搜索 |
+| 🟠 Medium | Qwen3.5-Plus | $0.5/M | 写作/分析 |
+| 🔴 Premium | Qwen3.6-Plus | $1.5/M | 复杂创作/代码 |
+
+### 0.5 Cost-based Routing (v2.0 新注入) ⭐⭐⭐
+
+```bash
+/opt:cost                       # 查看当前会话成本
+/opt:cost --daily               # 查看日成本
+/opt:cost --budget "daily=5.0"  # 设置日预算 $5
+/opt:cost --alert "80%"         # 预算 80% 时告警
+```
+
+**预算分配**:
+```yaml
+budget:
+  daily: 5.0                    # 每日 $5
+  warning_threshold: 0.8        # 80% 预警
+  critical_threshold: 0.95      # 95% 紧急
+  
+  # 模型切换规则
+  rules:
+    - budget_percent < 50: [premium, medium, cheap]  # 全模型可用
+    - budget_percent < 80: [medium, cheap]            # 砍掉 premium
+    - budget_percent < 95: [cheap]                    # 仅经济模型
+    - budget_percent >= 95: [free]                    # 仅免费模型
+```
+
+### 0.6 OpenRouter 响应缓存 (v2.0 新注入) ⭐⭐
+
+```bash
+/opt:cache                      # 查看缓存状态
+/opt:cache --enable             # 启用 OpenRouter 缓存
+/opt:cache --clear              # 清空缓存
+/opt:cache --stats              # 缓存统计
+```
+
+**缓存策略**:
+- 相同 Prompt + 相同模型 → 命中缓存
+- TTL: 1 小时
+- 仅缓存幂等请求（翻译/格式化/简单问答）
+- 创作类请求不缓存
+
+### 0.7 CC-Switch 精炼吸收：级联故障转移 (v2.5 新注入) ⭐⭐
+
+**吸收来源**: farion1231/cc-switch (906⭐)
+
+**必要性判定**:
+- ✅ **中**: 级联故障转移 (主→中继→备用) — 已有Provider路由但缺少故障降级链
+- ❌ **低 → 跳过**: Provider代理路由表 (在OpenClaw环境可用性有限)
+- ❌ **低 → 跳过**: 多模型一键切换 (路由引擎已有)
+
+**级联故障转移**:
+```
+请求 → 主模型(DeepSeek-Chat)
+         ↓ 403/429/500?
+         → 中继模型(Qwen3.5-Plus)
+              ↓ 失败?
+              → 备用模型(Qwen3.6-Plus)
+                   ↓ 均失败
+                   → 返回错误 + Provider+建议
+```
+
+```bash
+/opt:switch --fallback on      # 开启故障转移
+/opt:switch --fallback-off     # 关闭
+/opt:switch --fallback-status  # 查看故障转移状态
+```
+
+**切换策略**:
+| 场景 | 推荐模型 | 路由方式 |
+|------|----------|----------|
+| 快速问答 | DeepSeek-Chat | 直接 (最快) |
+| 编码任务 | Qwen-Coder-Plus | 直接 (专用) |
+| 写作任务 | Qwen3.6-Plus | 直接 (质量最高) |
+| 主模型不可用 | 自动降级 | 级联故障转移 |
+| 预算紧张 | DeepSeek-Chat | 强制廉价路由 |
+
+---
+
+### 0.8 Context Budget 分配器 (v2.0 新注入) ⭐⭐
+
+```bash
+/opt:budget                     # 查看当前 Context Budget
+/opt:budget --set "context=2000, response=1500"  # 手工分配
+/opt:budget --auto              # 自动分配
+```
+
+**自动分配策略**:
+```
+总预算: 4000 tokens
+├── System Prompt: 500 tokens (固定)
+├── Context History: 按复杂度和模型动态
+│   ├── 简单任务: 500 tokens
+│   ├── 常规任务: 1000 tokens
+│   └── 复杂任务: 2000 tokens
+├── Active Tools: 300 tokens (固定)
+├── Memory Context: 500 tokens (固定)
+└── Response Budget: 剩余
+```
+
+---
+
+### 0.9 Trajectory 式智能摘要替换 (v2.5 新注入) ⭐⭐⭐
+
+**吸收来源**: Hermes Agent trajectory_compressor.py (1462行Python) 的训练轨迹压缩策略
+
+**原理**: Hermes 的压缩策略专为训练信号优化, 但其'保护首尾→压缩中间→摘要替换'模式直接适用于实时会话瘦身。
+
+```bash
+/opt:compress                   # 智能压缩当前会话
+/opt:compress --aggressive      # 激进模式 (保护更少)
+/opt:compress --conservative    # 保守模式 (保护更多)
+/opt:compress --stats           # 查看压缩统计
+```
+
+**策略细节**:
+```
+1. 保护首尾:
+   - system prompt 不压缩 (完整保留)
+   - 最后 N 轮对话不压缩 (当前上下文)
+   - 第1次工具结果不压缩 (建立上下文)
+
+2. 压缩中间:
+   - 只处理中间轮次 (非首/非尾)
+   - 从第2次工具结果开始压缩
+   - 只压缩到必要程度 (满足预算即可)
+
+3. 摘要替换:
+   - 压缩区域 → 替换成单条human摘要消息
+   - 替换后保持结构化完整性
+   - 附加通知: "一些早期工具结果已被压缩以节省上下文"
+```
+
+**与原有压缩的关系**:
+| 原有压缩 | 智能摘要替换 | 两者配合 |
+|----------|------------|---------|
+| 按大小截断 (50KB→8KB) | 按轮次保留语义 | 先摘要再精简 |
+| 移除冗余 | 替换为摘要 | 摘要+去重 |
+| 不考虑时间顺序 | 保护最近轮次 | 新旧交织更合理 |
+| 简单剪枝 | LLM摘要 (可选) | 灵活切换 |
+
+**配置**:
+```yaml
+intelligent_compression:
+  enabled: false                 # 默认关闭 (保守策略)
+  protect_first_system: true
+  protect_first_human: true
+  protect_first_tool: true
+  protect_last_turns: 4          # 最后 N 轮不压缩
+  use_llm_summary: false         # 使用LLM做摘要? (增token)
+  summary_model: deepseek-chat   # 摘要用廉价模型
+  summary_target_tokens: 750     # 摘要目标大小
+```
+
+**预期效果**: 在同等上下文预算下, 保留更完整的语义连续性, 减少信息丢失。
 
 ### 2. 智能缓存
 ```
@@ -336,42 +635,32 @@ token_budget:
 ### 示例 1: 对话历史压缩
 
 ```python
-# 原始对话历史 (2000 tokens)
 history = load_conversation_history()
 
-# 压缩后 (800 tokens)
 compressed = compress_conversation_history(history)
 
-# 节省：1200 tokens (60%)
 ```
 
 ### 示例 2: 缓存常用回复
 
 ```python
-# 第 1 次：生成回复 (消耗 500 tokens)
 reply = generate_reply("你好")
 cache_reply("你好", reply)
 
-# 第 2-10 次：使用缓存 (消耗 0 tokens)
 for i in range(9):
     cached = get_cached_reply("你好")
     # 直接使用缓存
 
-# 总节省：500 * 9 = 4500 tokens
 ```
 
 ### 示例 3: 流式输出
 
 ```python
-# 传统方式：等待全部生成后输出
-# 等待时间：10 秒
 
-# 流式方式：边生成边输出
 async for chunk in stream_output(response):
     send_to_user(chunk)
     # 用户立即看到内容
 
-# 感知等待时间：2 秒 (首块)
 ```
 
 ---
@@ -478,5 +767,5 @@ token_optimization:
 
 ---
 
-*Token Optimization v1.0 - 更快更省*
-*Last updated: 2026-03-24*
+*Token Optimization v2.6 - 更快更省 + 智能路由 + 会话管理 + 级联故障转移 + 智能摘要替换 + TokenJuice三层规则*
+*Last updated: 2026-05-22 (v2.6 OpenHuman TokenJuice融合版)*
